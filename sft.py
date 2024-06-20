@@ -11,6 +11,7 @@ from time import sleep
 
 from loguru import logger
 import json, copy
+from collections.abc import Mapping
 
 DATA_PATH="data/cnn/random/"
 MODEL_PATH="llama_aqlm"
@@ -54,6 +55,14 @@ def tokenize_data(dataset: Dataset, tokenizer: AutoTokenizer):
     tokenized_data = dataset.map(tokenize_example, batched=True)
     return tokenize_data
 
+def collate_fn(self, examples):
+    if isinstance(examples, (list, tuple)) and isinstance(examples[0], Mapping):
+        encoded_inputs = {key: [example[key] for example in examples] for key in examples[0].keys()}
+    else:
+        encoded_inputs = examples
+
+    return encoded_inputs
+
 if __name__ == "__main__":
     logger.info("Loading data ...")
     train_ds = get_data('train')
@@ -70,7 +79,7 @@ if __name__ == "__main__":
     train_tokenized_data = tokenize_data(train_ds, tokenizer)
 
     # create dataloader
-    train_dataloader = DataLoader(train_tokenized_data, batch_size=TRAIN_BATCH_SIZE, num_workers=32, shuffle=True)
+    train_dataloader = DataLoader(train_tokenized_data, batch_size=TRAIN_BATCH_SIZE, num_workers=32, shuffle=True, collate_fn=collate_fn)
 
     logger.info('Adding LoRA ...')
     peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1, target_modules=["layers.28.self_attn.v_proj"])
