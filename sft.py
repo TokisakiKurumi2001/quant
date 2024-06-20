@@ -13,13 +13,13 @@ from loguru import logger
 import json, copy
 from collections.abc import Mapping
 
-DATA_PATH="data/cnn/random/"
+DATA_PATH="./" # "data/cnn/random/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
 MAX_LENGTH=1024
 MAX_PROMPT_LENGTH=860
-TRAIN_BATCH_SIZE=8
-GRADIENT_ACCUMULATION_STEP=1
+TRAIN_BATCH_SIZE=4
+GRADIENT_ACCUMULATION_STEP=2
 NUM_EPOCHS=2
 SAVE_DIR="test"
 
@@ -40,32 +40,33 @@ def tokenize_data(dataset: Dataset, tokenizer: AutoTokenizer):
     def tokenize_example(example):
         # code from `https://github.com/ZhengxiangShi/InstructionModelling/blob/main/src/finetune_kl.py#L262`
         example_text = [p + o + tokenizer.eos_token for p, o in zip(example['prompt'], example['output'])]
-        tokenized_example = tokenizer(example_text, max_length=MAX_LENGTH, truncation=True, padding=True, return_tensors='pt')
+        tokenized_example = tokenizer(example_text, max_length=MAX_LENGTH, truncation=True, padding="max_length", return_tensors='pt')
         input_ids = tokenized_example.input_ids
         labels = input_ids.clone() # copy.deepcopy(input_ids)
-        tokenized_prompt = tokenizer(example['prompt'], max_length=MAX_PROMPT_LENGTH, truncation=True, padding=True, return_tensors='pt')
+        tokenized_prompt = tokenizer(example['prompt'], max_length=MAX_PROMPT_LENGTH, truncation=True, padding="max_length", return_tensors='pt')
         # mask the prompt part for avoiding loss
         labels[:, :tokenized_prompt.input_ids.shape[1]] = -100
-        attention_mask = torch.ones_like(input_ids)
+        attention_mask = tokenized_example.attention_mask 
         return {
             'input_ids': input_ids,
             'labels': labels,
             'attention_mask': attention_mask,
         }
-    tokenized_data = dataset.map(tokenize_example, batched=True)
-    return tokenize_data
+    tokenized_data = dataset.map(tokenize_example, batched=True, remove_columns=dataset.column_names,)
+    return tokenized_data
 
-def collate_fn(self, examples):
+def collate_fn(examples):
     if isinstance(examples, (list, tuple)) and isinstance(examples[0], Mapping):
         encoded_inputs = {key: [example[key] for example in examples] for key in examples[0].keys()}
     else:
         encoded_inputs = examples
 
-    return encoded_inputs
+    batch = {k: torch.tensor(v, dtype=torch.int64) for k, v in encoded_inputs.items()}
+    return batch
 
 if __name__ == "__main__":
     logger.info("Loading data ...")
-    train_ds = get_data('train')
+    train_ds = get_data('testing') # 'train')
     logger.success(f"There are {len(train_ds)} examples.")
     
     logger.info('Loading model ...')
@@ -74,28 +75,29 @@ if __name__ == "__main__":
     logger.success(f'Successfully load {MODEL_PATH} model')
 
     logger.info("Tokenizing data ...")
-    tokenizer.pad_token_id = tokenizer.eos_token_id
-    tokenizer.padding = "left"
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "right"
     train_tokenized_data = tokenize_data(train_ds, tokenizer)
+    # breakpoint()
 
     # create dataloader
-    train_dataloader = DataLoader(train_tokenized_data, batch_size=TRAIN_BATCH_SIZE, num_workers=32, shuffle=True, collate_fn=collate_fn)
+    train_dataloader = DataLoader(train_tokenized_data, batch_size=TRAIN_BATCH_SIZE, num_workers=4, shuffle=True, collate_fn=collate_fn)
 
     logger.info('Adding LoRA ...')
-    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1, target_modules=["layers.28.self_attn.v_proj"])
+    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1, target_modules=["v_proj", "q_proj"])
     quantized_model = get_peft_model(quantized_model, peft_config)
     quantized_model.print_trainable_parameters()
 
     # prepare optimizer and loss function
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.AdamW(quantized_model.parameters(), lr=1e-4, fused=True)
+    optimizer = torch.optim.AdamW(quantized_model.parameters(), lr=5e-5, )#fused=True)
 
     device = quantized_model.device
     vocabulary_size = quantized_model.config.vocab_size
 
     logger.info('Training ...')
-    for epoch in NUM_EPOCHS:
-        with tqdm(enumerate(train_dataloader), unit="batch") as tepoch:
+    for epoch in range(NUM_EPOCHS):
+        with tqdm(enumerate(train_dataloader), unit="batch", total=len(train_dataloader)) as tepoch:
             for step, batch in tepoch:
                 tepoch.set_description(f"Epoch {epoch}")
 
