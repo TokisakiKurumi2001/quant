@@ -6,15 +6,17 @@ from datasets import Dataset
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
+from tqdm import tqdm
+from time import sleep
 
 from loguru import logger
-import json
+import json, copy
 
 DATA_PATH="data/cnn/random/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
 MAX_LENGTH=1024
-MAX_PROMPT_LENGTH=512
+MAX_PROMPT_LENGTH=860
 TRAIN_BATCH_SIZE=8
 GRADIENT_ACCUMULATION_STEP=1
 NUM_EPOCHS=2
@@ -25,7 +27,7 @@ def get_data(split: str):
     Read JSONL -> convert HF datasets
     """
     data = []
-    filename = DATA_PATH + split + ".json"
+    filename = DATA_PATH + split + ".jsonl"
     with open(filename, encoding="utf-8") as fin:
         for line in fin:
             _data = json.loads(line)
@@ -36,18 +38,18 @@ def get_data(split: str):
 def tokenize_data(dataset: Dataset, tokenizer: AutoTokenizer):
     def tokenize_example(example):
         # code from `https://github.com/ZhengxiangShi/InstructionModelling/blob/main/src/finetune_kl.py#L262`
-        example_text = example['prompt'] + example['output'] + tokenizer.eos_token
-        tokenized_example = tokenizer(example_text, return_tensors='pt', max_length=MAX_LENGTH, truncation=True)
+        example_text = [p + o + tokenizer.eos_token for p, o in zip(example['prompt'], example['output'])]
+        tokenized_example = tokenizer(example_text, max_length=MAX_LENGTH, truncation=True, padding=True, return_tensors='pt')
         input_ids = tokenized_example.input_ids
-        labels = input_ids.clone()
-        tokenized_prompt = tokenizer(example['prompt'], return_tensors='pt', max_length=MAX_PROMPT_LENGTH, truncation=True)
+        labels = input_ids.clone() # copy.deepcopy(input_ids)
+        tokenized_prompt = tokenizer(example['prompt'], max_length=MAX_PROMPT_LENGTH, truncation=True, padding=True, return_tensors='pt')
         # mask the prompt part for avoiding loss
         labels[:, :tokenized_prompt.input_ids.shape[1]] = -100
         attention_mask = torch.ones_like(input_ids)
         return {
-            'input_ids': input_ids.flatten(),
-            'labels': labels.flatten(),
-            'attention_mask': attention_mask.flatten(),
+            'input_ids': input_ids,
+            'labels': labels,
+            'attention_mask': attention_mask,
         }
     tokenized_data = dataset.map(tokenize_example, batched=True)
     return tokenize_data
