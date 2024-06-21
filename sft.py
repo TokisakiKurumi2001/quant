@@ -13,14 +13,14 @@ from loguru import logger
 import json, copy
 from collections.abc import Mapping
 
-DATA_PATH="./" # "data/cnn/random/"
+DATA_PATH="data/cnn/random/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
 MAX_LENGTH=1024
 MAX_PROMPT_LENGTH=860
 TRAIN_BATCH_SIZE=4
 GRADIENT_ACCUMULATION_STEP=2
-NUM_EPOCHS=2
+NUM_EPOCHS=3
 SAVE_DIR="test"
 
 def get_data(split: str):
@@ -66,7 +66,7 @@ def collate_fn(examples):
 
 if __name__ == "__main__":
     logger.info("Loading data ...")
-    train_ds = get_data('testing') # 'train')
+    train_ds = get_data('train')
     logger.success(f"There are {len(train_ds)} examples.")
     
     logger.info('Loading model ...')
