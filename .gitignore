@@ -162,3 +162,8 @@ cython_debug/
 #.idea/
 #
 slurm/
+data
+test/
+*.jsonl
+llama_aqlm
+extract.py
