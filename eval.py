@@ -40,7 +40,7 @@ def evaluate(data, tokenizer, model, num_eval: int):
         inputs = {k: v.to(device) for k, v in inputs.items()}
         outputs = model.generate(**inputs, max_new_tokens=NEW_TOKENS)
 
-        prompt_length = len(inputs.inputs_id)
+        prompt_length = inputs["input_ids"].shape[-1]
         new_gen_tokens = outputs[0][prompt_length:]
 
         out = tokenizer.decode(new_gen_tokens, skip_special_tokens=True)
