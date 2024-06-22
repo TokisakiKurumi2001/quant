@@ -39,7 +39,11 @@ def evaluate(data, tokenizer, model, num_eval: int):
         inputs = tokenizer(text, max_length=MAX_PROMPT_LENGTH, truncation=True, return_tensors="pt")
         inputs = {k: v.to(device) for k, v in inputs.items()}
         outputs = model.generate(**inputs, max_new_tokens=NEW_TOKENS)
-        out = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        prompt_length = len(inputs.inputs_id)
+        new_gen_tokens = outputs[0][prompt_length:]
+
+        out = tokenizer.decode(new_gen_tokens, skip_special_tokens=True)
         preds.append(out)
     return preds
 
