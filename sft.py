@@ -39,10 +39,12 @@ def get_data(split: str):
 def tokenize_data(dataset: Dataset, tokenizer: AutoTokenizer):
     def tokenize_example(example):
         # code from `https://github.com/ZhengxiangShi/InstructionModelling/blob/main/src/finetune_kl.py#L262`
-        example_text = [p + o + tokenizer.eos_token for p, o in zip(example['prompt'], example['output'])]
+        example_text = [p + o for p, o in zip(example['prompt'], example['output'])]
         tokenized_example = tokenizer(example_text, max_length=MAX_LENGTH, truncation=True, padding="max_length", return_tensors='pt')
         input_ids = tokenized_example.input_ids
         labels = input_ids.clone() # copy.deepcopy(input_ids)
+        labels[:, :-1] = labels[:, 1:].clone()
+        labels[:, -1] = tokenizer.eos_token_id
         tokenized_prompt = tokenizer(example['prompt'], max_length=MAX_PROMPT_LENGTH, truncation=True, padding="max_length", return_tensors='pt')
         # mask the prompt part for avoiding loss
         labels[:, :tokenized_prompt.input_ids.shape[1]] = -100

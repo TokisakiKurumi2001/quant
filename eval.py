@@ -9,7 +9,7 @@ from tqdm import tqdm
 DATA_PATH="data/cnn/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
-LORA_DIR="test"
+LORA_DIR="test-newlora"
 MAX_PROMPT_LENGTH=860
 MAX_LENGTH=1024
 NEW_TOKENS=MAX_LENGTH - MAX_PROMPT_LENGTH
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # output = quantized_model.generate(tokenizer("chicken", return_tensors="pt")["input_ids"].cuda(), min_new_tokens=128, max_new_tokens=128)
     # logger.debug(tokenizer.decode(output[0]))
 
-    preds = evaluate(eval_data, tokenizer, quantized_model)
+    preds = evaluate(eval_data, tokenizer, quantized_model, 10)
     with open(OUTPUT_FILE, 'w+') as fout:
         for p in preds:
             json_obj = {'predict': p}
