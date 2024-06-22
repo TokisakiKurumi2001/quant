@@ -72,7 +72,7 @@ if __name__ == "__main__":
     logger.success(f"There are {len(train_ds)} examples.")
     
     logger.info('Loading model ...')
-    quantized_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, torch_dtype="auto", device_map="auto", low_cpu_mem_usage=True)
+    quantized_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, torch_dtype=torch.bfloat16, device_map="auto")#, low_cpu_mem_usage=True)
     tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_PATH)
     logger.success(f'Successfully load {MODEL_PATH} model')
 
