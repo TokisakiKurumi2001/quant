@@ -14,10 +14,10 @@ from loguru import logger
 import json, copy
 from collections.abc import Mapping
 
-DATA_PATH="data/cnn/random/"
+DATA_PATH="./" # "data/cnn/random/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
-TEACHER_MODEL_PATH='meta-llama/Llama-2-7b-hf'
+TEACHER_MODEL_PATH='llama_teacher'
 MAX_LENGTH=1024
 MAX_PROMPT_LENGTH=860
 TRAIN_BATCH_SIZE=1
@@ -58,6 +58,7 @@ def tokenize_data(dataset: Dataset, tokenizer: AutoTokenizer):
             'attention_mask': attention_mask,
         }
     tokenized_data = dataset.map(tokenize_example, batched=True, remove_columns=dataset.column_names,)
+    return tokenized_data
 
 def collate_fn(examples):
     if isinstance(examples, (list, tuple)) and isinstance(examples[0], Mapping):
@@ -84,7 +85,7 @@ class ReverseKLLoss():
 
 if __name__ == "__main__":
     logger.info("Loading data ...")
-    train_ds = get_data('train')
+    train_ds = get_data('testing') #'train')
     logger.success(f"There are {len(train_ds)} examples.")
     
     logger.info('Loading student model ...')
