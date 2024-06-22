@@ -33,6 +33,7 @@ def evaluate(data, tokenizer, model):
     # into the loop of tokenizer, generate, accumulate the result
     preds = []
     device = model.device
+    model.generation_config.pad_token_id = tokenizer.eos_token_id
     for _data in tqdm(data, desc="Evaluating"):
         text = _data['prompt']
         inputs = tokenizer(text, max_length=MAX_PROMPT_LENGTH, truncation=True, return_tensors="pt")
