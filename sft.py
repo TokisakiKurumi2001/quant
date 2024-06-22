@@ -84,7 +84,7 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(train_tokenized_data, batch_size=TRAIN_BATCH_SIZE, num_workers=4, shuffle=True, collate_fn=collate_fn)
 
     logger.info('Adding LoRA ...')
-    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=16, lora_dropout=0.0, target_modules="all-linear")
+    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=16, lora_dropout=0.0, target_modules=['q_proj', 'k_proj', 'v_proj', 'o_proj', 'gate_proj', 'up_proj', 'down_proj'])
     quantized_model = get_peft_model(quantized_model, peft_config)
     quantized_model.print_trainable_parameters()
 
