@@ -94,7 +94,7 @@ if __name__ == "__main__":
     logger.success(f'Successfully load {MODEL_PATH} model')
 
     logger.info('Loading teacher model ...')
-    teacher_model = AutoModelForCausalLM.from_pretrained(TEACHER_MODEL_PATH, torch_dtype="auto", device_map="auto", low_cpu_mem_usage=True)
+    teacher_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, torch_dtype=torch.bfloat16, device_map="auto")#, low_cpu_mem_usage=True)
     logger.success(f'Successfully load {TEACHER_MODEL_PATH} model')
 
     logger.info("Tokenizing data ...")
