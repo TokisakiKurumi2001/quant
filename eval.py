@@ -29,12 +29,12 @@ def load_eval_data():
     logger.success(f"Sample {len(data)} samples.")
     return data
 
-def evaluate(data, tokenizer, model):
+def evaluate(data, tokenizer, model, num_eval: int):
     # into the loop of tokenizer, generate, accumulate the result
     preds = []
     device = model.device
     model.generation_config.pad_token_id = tokenizer.eos_token_id
-    for _data in tqdm(data, desc="Evaluating"):
+    for _data in tqdm(data[:num_eval], desc="Evaluating"):
         text = _data['prompt']
         inputs = tokenizer(text, max_length=MAX_PROMPT_LENGTH, truncation=True, return_tensors="pt")
         inputs = {k: v.to(device) for k, v in inputs.items()}
