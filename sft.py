@@ -13,15 +13,15 @@ from loguru import logger
 import json, copy
 from collections.abc import Mapping
 
-DATA_PATH="data/cnn/random/"
+DATA_PATH="./" # data/cnn/random/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
 MAX_LENGTH=1024
 MAX_PROMPT_LENGTH=860
 TRAIN_BATCH_SIZE=4
 GRADIENT_ACCUMULATION_STEP=2
-NUM_EPOCHS=3
-SAVE_DIR="test"
+NUM_EPOCHS=1
+SAVE_DIR="test-newlora"
 
 def get_data(split: str):
     """
@@ -66,7 +66,7 @@ def collate_fn(examples):
 
 if __name__ == "__main__":
     logger.info("Loading data ...")
-    train_ds = get_data('train')
+    train_ds = get_data('testing') # 'train')
     logger.success(f"There are {len(train_ds)} examples.")
     
     logger.info('Loading model ...')
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(train_tokenized_data, batch_size=TRAIN_BATCH_SIZE, num_workers=4, shuffle=True, collate_fn=collate_fn)
 
     logger.info('Adding LoRA ...')
-    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=32, lora_dropout=0.1, target_modules=["v_proj", "q_proj"])
+    peft_config = LoraConfig(task_type=TaskType.CAUSAL_LM, inference_mode=False, r=8, lora_alpha=16, lora_dropout=0.0, target_modules="all-linear")
     quantized_model = get_peft_model(quantized_model, peft_config)
     quantized_model.print_trainable_parameters()
 
