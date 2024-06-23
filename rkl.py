@@ -18,6 +18,7 @@ DATA_PATH="./" # "data/cnn/random/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
 TEACHER_MODEL_PATH='llama_teacher'
+TEACHER_PEFT_PATH='teacher-sft'
 MAX_LENGTH=1024
 MAX_PROMPT_LENGTH=860
 TRAIN_BATCH_SIZE=1
@@ -96,6 +97,9 @@ if __name__ == "__main__":
     logger.info('Loading teacher model ...')
     teacher_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, torch_dtype=torch.bfloat16, device_map="auto")#, low_cpu_mem_usage=True)
     logger.success(f'Successfully load {TEACHER_MODEL_PATH} model')
+
+    logger.info('Loading teacher LoRA ...')
+    teacher_model.load_adapter(TEACHER_PEFT_PATH)
 
     logger.info("Tokenizing data ...")
     tokenizer.pad_token = tokenizer.eos_token
