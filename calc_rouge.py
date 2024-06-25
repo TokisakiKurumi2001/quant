@@ -19,6 +19,6 @@ if __name__ == "__main__":
 
     metrics = evaluate.load("metrics/rouge.py")
     for d, p in zip(data, preds):
-        metrics.add_batch(predictions=p, references=d['output'])
+        metrics.add_batch(predictions=[p['predict']], references=[d['output']])
     result = metrics.compute()
     print(result)
