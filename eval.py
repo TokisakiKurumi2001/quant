@@ -11,7 +11,7 @@ import torch
 DATA_PATH="data/cnn/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
-LORA_DIR="test-newlora"
+LORA_DIR="test-rkl"
 MAX_PROMPT_LENGTH=860
 MAX_LENGTH=1024
 NEW_TOKENS=MAX_LENGTH - MAX_PROMPT_LENGTH
@@ -54,19 +54,21 @@ def batch_generate(data, tokenizer, model, batch_size: int=32):
     device = model.device
     model.generation_config.pad_token_id = tokenizer.eos_token_id
     for i in tqdm(range(0, len(data), batch_size), desc='Evaluating', unit='batch'):
-        texts = data[i:i+batch_size]
+        texts = [t['prompt'] for t in data[i:i+batch_size]]
         inputs = tokenizer(texts, max_length=MAX_PROMPT_LENGTH, truncation=True, padding=True, return_tensors='pt')
         inputs = {k: v.to(device) for k, v in inputs.items()}
         outputs = model.generate(**inputs, do_sample=True, top_k=0, top_p=1.0, temperature=1.0, max_new_tokens=NEW_TOKENS)
 
         prompt_length = torch.sum(inputs['attention_mask'], dim=1).cpu().tolist()
-        for output, length in zip(outputs, prompt_length):
+        outputs_cpu = outputs.clone().cpu()
+        for output, length in zip(outputs_cpu, prompt_length):
             new_gen_tokens = output[length:]
             out = tokenizer.decode(new_gen_tokens, skip_special_tokens=True)
             preds.append(out)
 
         del prompt_length
         del inputs
+        del outputs
 
 if __name__ == "__main__":
     eval_data = load_eval_data()
