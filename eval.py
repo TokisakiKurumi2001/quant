@@ -49,7 +49,7 @@ def evaluate(data, tokenizer, model, num_eval: int):
         preds.append(out)
     return preds
 
-def batch_generate(data, tokenizer, model, batch_size: int=32):
+def batch_generate(data, tokenizer, model, batch_size: int=16):
     preds = []
     device = model.device
     model.generation_config.pad_token_id = tokenizer.eos_token_id
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     quantized_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, torch_dtype="auto", device_map="auto", low_cpu_mem_usage=True)
     tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_PATH)
     tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.padding_side = "right"
+    tokenizer.padding_side = "left"
     logger.success(f'Successfully load {MODEL_PATH} model')
 
     # logger.info('Inference before LoRA ...')
