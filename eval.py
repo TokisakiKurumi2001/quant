@@ -15,7 +15,7 @@ LORA_DIR="test-rkl"
 MAX_PROMPT_LENGTH=860
 MAX_LENGTH=1024
 NEW_TOKENS=MAX_LENGTH - MAX_PROMPT_LENGTH
-OUTPUT_FILE='pred_batch.jsonl'
+OUTPUT_FILE='pred_batch_v1.jsonl'
 
 def load_eval_data():
     # read data
@@ -57,7 +57,8 @@ def batch_generate(data, tokenizer, model, batch_size: int=16):
         texts = [t['prompt'] for t in data[i:i+batch_size]]
         inputs = tokenizer(texts, max_length=MAX_PROMPT_LENGTH, truncation=True, padding=True, return_tensors='pt')
         inputs = {k: v.to(device) for k, v in inputs.items()}
-        outputs = model.generate(**inputs, do_sample=True, top_k=0, top_p=1.0, temperature=1.0, max_new_tokens=NEW_TOKENS)
+        # outputs = model.generate(**inputs, do_sample=True, top_k=0, top_p=1.0, temperature=1.0, max_new_tokens=NEW_TOKENS)
+        outputs = model.generate(**inputs, max_new_tokens=NEW_TOKENS)
 
         prompt_length = torch.sum(inputs['attention_mask'], dim=1).cpu().tolist()
         outputs_cpu = outputs.clone().cpu()
@@ -69,6 +70,7 @@ def batch_generate(data, tokenizer, model, batch_size: int=16):
         del prompt_length
         del inputs
         del outputs
+    return preds
 
 if __name__ == "__main__":
     eval_data = load_eval_data()

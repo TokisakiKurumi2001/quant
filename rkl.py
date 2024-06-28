@@ -14,7 +14,7 @@ from loguru import logger
 import json, copy
 from collections.abc import Mapping
 
-DATA_PATH="./" # "data/cnn/random/"
+DATA_PATH="data/cnn/random/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
 TEACHER_MODEL_PATH='llama_teacher'
@@ -23,7 +23,7 @@ MAX_LENGTH=1024
 MAX_PROMPT_LENGTH=860
 TRAIN_BATCH_SIZE=1
 GRADIENT_ACCUMULATION_STEP=8
-NUM_EPOCHS=2
+NUM_EPOCHS=5
 SAVE_DIR="test-rkl"
 KD_RATIO=0.5
 
@@ -86,7 +86,7 @@ class ReverseKLLoss():
 
 if __name__ == "__main__":
     logger.info("Loading data ...")
-    train_ds = get_data('testing') #'train')
+    train_ds = get_data('train')
     logger.success(f"There are {len(train_ds)} examples.")
     
     logger.info('Loading student model ...')
