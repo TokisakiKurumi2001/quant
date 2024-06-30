@@ -2,7 +2,7 @@ import evaluate
 import json
 
 TEST_FILE_PATH='data/cnn/test.jsonl'
-PREDICT_PATH='pred_batch_v1.jsonl'
+PREDICT_PATH='pred_sft.jsonl'
 
 if __name__ == "__main__":
     preds = []
