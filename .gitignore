@@ -167,3 +167,4 @@ test/
 *.jsonl
 llama_aqlm
 extract.py
+data_ift
