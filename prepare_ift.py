@@ -1,4 +1,4 @@
-import json, os
+import json, os, random
 
 SAVE_DATA_PATH="data_ift"
 DATA_PATH="data/dolly"
@@ -30,7 +30,7 @@ if __name__ == "__main__":
             data.append(d)
 
     # random shuffle
-    data.shuffle()
+    random.shuffle(data)
     # first 5k for test, rest for training
     ds = [prompt_template(d) for d in data]
 
