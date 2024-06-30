@@ -35,7 +35,7 @@ if __name__ == "__main__":
     ds = [prompt_template(d) for d in data]
 
     test_ds = ds[:5000]
-    train_ds = [5000:]
+    train_ds = ds[5000:]
 
     os.makedirs(SAVE_DATA_PATH, exist_ok=True)
     with open(SAVE_DATA_PATH+"/train.jsonl") as fout:
