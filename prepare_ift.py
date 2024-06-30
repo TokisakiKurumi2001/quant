@@ -38,10 +38,10 @@ if __name__ == "__main__":
     train_ds = ds[5000:]
 
     os.makedirs(SAVE_DATA_PATH, exist_ok=True)
-    with open(SAVE_DATA_PATH+"/train.jsonl") as fout:
+    with open(SAVE_DATA_PATH+"/train.jsonl", 'w+') as fout:
         for d in train_ds:
             fout.write(json.dumps(d) + "\n")
 
-    with open(SAVE_DATA_PATH+"/test.jsonl") as fout:
+    with open(SAVE_DATA_PATH+"/test.jsonl", 'w+') as fout:
         for d in test_ds:
             fout.write(json.dumps(d) + "\n")
