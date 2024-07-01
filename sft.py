@@ -13,15 +13,15 @@ from loguru import logger
 import json, copy
 from collections.abc import Mapping
 
-DATA_PATH="data/cnn/random/"
+DATA_PATH="data_ift/" # "data/cnn/random/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
-MAX_LENGTH=1024
-MAX_PROMPT_LENGTH=860
+MAX_LENGTH=400
+MAX_PROMPT_LENGTH=210
 TRAIN_BATCH_SIZE=4
 GRADIENT_ACCUMULATION_STEP=2
 NUM_EPOCHS=5
-SAVE_DIR="test-newlora"
+SAVE_DIR="test-newlora-ift"
 
 def get_data(split: str):
     """

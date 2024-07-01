@@ -8,14 +8,14 @@ from tqdm import tqdm
 
 import torch
 
-DATA_PATH="data/cnn/"
+DATA_PATH="data_ift/" # "data/cnn/"
 MODEL_PATH="llama_aqlm"
 TOKENIZER_PATH="llama_aqlm"
-LORA_DIR="test-newlora"
-MAX_PROMPT_LENGTH=860
-MAX_LENGTH=1024
+LORA_DIR="test-newlora-ift"
+MAX_PROMPT_LENGTH=210 # 860
+MAX_LENGTH=400 # 1024
 NEW_TOKENS=MAX_LENGTH - MAX_PROMPT_LENGTH
-OUTPUT_FILE='pred_sft.jsonl'
+OUTPUT_FILE='pred_sft_ift.jsonl'
 
 def load_eval_data():
     # read data
