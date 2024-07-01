@@ -5,7 +5,7 @@ from statistics import median, mean
 from typing import Optional, List
 from numpy import quantile
 
-DATA_PATH="data_ift/train.jsonl"
+DATA_PATH="genqa_small/train.jsonl"
 
 def calc_stats(ls: List[int]):
     print(f'Median: {median(ls)}')
